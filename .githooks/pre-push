@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# 检查测试覆盖率是否达到100%
+go test -coverprofile=cover.out ./...
+if [ "$(go tool cover -func=cover.out | grep -E '^total.*100.0%' | wc -l)" -ne "1" ]; then
+    echo "测试覆盖率未达到100%，无法进行提交。"
+    exit 1
+fi
+
+# 清理覆盖率输出文件
+rm cover.out
+
+exit 0
