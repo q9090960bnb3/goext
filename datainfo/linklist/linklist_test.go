@@ -196,7 +196,6 @@ func TestRemoveNext(t *testing.T) {
 		wantDeletedVal int
 		wantOk         bool
 	}{
-		// TODO: Add test cases.
 		{
 			name: "remove valid node",
 			args: args{
