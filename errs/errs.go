@@ -11,9 +11,11 @@ type errInfo struct {
 }
 
 func Append(err error, errs ...error) *errInfo {
-	return &errInfo{
+	res := &errInfo{
 		e: multierror.Append(err, errs...),
 	}
+	res.e.ErrorFormat = ListFormatFunc
+	return res
 }
 
 func (e *errInfo) Error() string {
@@ -23,8 +25,14 @@ func (e *errInfo) Error() string {
 func (e *errInfo) Format(s fmt.State, v rune) {
 
 	if v == 'v' && s.Flag('+') {
-		for _, err := range e.e.WrappedErrors() {
-			fmt.Fprintf(s, "%+v\n", err)
+		wrappedErrs := e.e.WrappedErrors()
+		lenErr := len(wrappedErrs)
+		for i, err := range wrappedErrs {
+			if i != lenErr-1 {
+				fmt.Fprintf(s, "%+v\n", err)
+			} else {
+				fmt.Fprintf(s, "%+v", err)
+			}
 		}
 		return
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"golang.org/x/xerrors"
 )
 
@@ -16,10 +17,22 @@ func f2() error {
 	return xerrors.New("f2 error")
 }
 
-func Test00(t *testing.T) {
+var errSpecial = errors.New("special error")
 
-	err := Append(f1(), f2())
-	fmt.Printf("%#v\n", err)
+func specialErr() error {
+	return xerrors.Errorf("err: %w", errSpecial)
+}
+
+func specialErrLast() error {
+	return xerrors.Errorf("err: %w", specialErr())
+}
+
+func Test00(t *testing.T) {
+	errMulti := multierror.Append(f1(), f2(), specialErrLast())
+	fmt.Printf("%#v\n", errMulti)
+
+	err := Append(f1(), f2(), specialErrLast())
+	fmt.Printf("%#v\n====\n", err)
 	fmt.Printf("%+v\n", err)
 }
 
@@ -65,5 +78,22 @@ func Test03(t *testing.T) {
 	fmt.Println(errors.Is(err, errf6))
 
 	fmt.Printf("%+v", err)
+	fmt.Println(err)
+}
+
+func f7() error {
+	return errors.New("f7 error")
+}
+
+func Test04(t *testing.T) {
+	errPre := Append(f4(), f5(), f6())
+
+	err := Append(errPre, f7())
+	fmt.Println(err)
+}
+
+// one err
+func Test05(t *testing.T) {
+	err := Append(f4())
 	fmt.Println(err)
 }
